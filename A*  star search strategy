@@ -1,0 +1,80 @@
+def aStarAlgo(start_node, stop_node):
+    open_set = {start_node}
+    closed_set = set()
+    g = {}  # actual cost from start to node
+    parents = {}
+    
+    g[start_node] = 0
+    parents[start_node] = start_node
+    
+    while len(open_set) > 0:
+        n = None
+        
+        # Find node with lowest f(n) = g(n) + h(n)
+        for v in open_set:
+            if n == None or g[v] + heuristic(v) < g[n] + heuristic(n):
+                n = v
+        
+        if n == stop_node:
+            # Reconstruct path
+            path = []
+            total_cost = g[n]
+            while parents[n] != n:
+                path.append(n)
+                n = parents[n]
+            path.append(start_node)
+            path.reverse()
+            print(f'Optimal resource-efficient path: {path}')
+            print(f'Total path cost (resources consumed): {total_cost}')
+            return path
+        
+        # Explore neighbors
+        if n in Graph_nodes and Graph_nodes[n] != None:
+            for (m, weight) in get_neighbors(n):
+                # Skip if already in closed set
+                if m in closed_set:
+                    continue
+                
+                # Calculate new cost from start through n to m
+                new_cost = g[n] + weight
+                
+                # If m not in open_set or new path is better
+                if m not in open_set or new_cost < g.get(m, float('inf')):
+                    g[m] = new_cost
+                    parents[m] = n
+                    open_set.add(m)
+        
+        # Move current node from open to closed
+        open_set.remove(n)
+        closed_set.add(n)
+    
+    print('No path exists to goal!')
+    return None
+
+def get_neighbors(v):
+    if v in Graph_nodes and Graph_nodes[v] != None:
+        return Graph_nodes[v]
+    return []
+
+def heuristic(n):
+    H_dist = {
+        'A': 11,  # Estimated remaining cost from A to G
+        'B': 6,   # Estimated remaining cost from B to G
+        'C': 99,  # High heuristic guides away from dead ends
+        'D': 1,   # Very close to goal
+        'E': 7,   # Moderate estimate
+        'G': 0,   # Goal has zero heuristic
+    }
+    return H_dist[n]
+
+# Graph representation with resource costs (edges)
+Graph_nodes = {
+    'A': [('B', 2), ('E', 3)],   # From A: to B cost 2, to E cost 3
+    'B': [('C', 1), ('G', 9)],   # From B: to C cost 1, to G cost 9
+    'C': None,                    # Dead end
+    'E': [('D', 6)],             # From E: to D cost 6
+    'D': [('G', 1)],             # From D: to G cost 1
+}
+
+# Run the optimized A* search
+aStarAlgo('A', 'G')
